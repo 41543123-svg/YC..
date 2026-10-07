@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>心情小幫手</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+    }
+    body {
+      background: #e9ecef;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 15px;
+    }
+    .card {
+      background: #ffffff;
+      width: 100%;
+      max-width: 480px;
+      height: 85vh;
+      max-height: 680px;
+      padding: 16px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .home-btn {
+      background: #f1f3f5;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #495057;
+    }
+    .title {
+      font-size: 16px;
+      color: #333;
+      font-weight: 600;
+    }
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .mood-btn {
+      padding: 8px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .btn-happy { background-color: #ffec99; color: #5c3d00; }
+    .btn-sad { background-color: #d0ebff; color: #00376b; }
+    .btn-angry { background-color: #ffc9c9; color: #610000; }
+    .btn-anxious { background-color: #d3f9d8; color: #0b4010; }
+
+    /* 對話聊天紀錄區域 */
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 14px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .msg {
+      max-width: 82%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      line-height: 1.5;
+      font-size: 14.5px;
+      word-wrap: break-word;
+    }
+    .msg-user {
+      align-self: flex-end;
+      background-color: #7048e8;
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+    .msg-ai {
+      align-self: flex-start;
+      background-color: #ffffff;
+      color: #212529;
+      border: 1px solid #e9ecef;
+      border-bottom-left-radius: 2px;
+    }
+
+    /* 輸入區域 */
+    .input-section {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ced4da;
+      border-radius: 12px;
+      font-size: 14.5px;
+      outline: none;
+    }
+    input[type="text"]:focus { border-color: #7048e8; }
+    .send-btn {
+      padding: 10px 16px;
+      background-color: #7048e8;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14.5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div class="header">
+      <button class="home-btn" onclick="goHome()">🏠 首頁</button>
+      <div class="title">聊天小夥伴</div>
+      <div style="width: 50px;"></div>
+    </div>
+
+    <!-- 快捷按鈕 -->
+    <div class="btn-group">
+      <button class="mood-btn btn-happy" onclick="selectMood('開心')">開心</button>
+      <button class="mood-btn btn-sad" onclick="selectMood('難過')">難過</button>
+      <button class="mood-btn btn-angry" onclick="selectMood('生氣')">生氣</button>
+      <button class="mood-btn btn-anxious" onclick="selectMood('焦慮')">焦慮</button>
+    </div>
+
+    <!-- 聊天視窗 -->
+    <div class="chat-box" id="chatBox">
+      <div class="msg msg-ai">
+        安安！今天還好嗎？不管遇到什麼事，隨時跟我講喔～
+      </div>
+    </div>
+
+    <!-- 輸入區 -->
+    <div class="input-section">
+      <input type="text" id="userInput" placeholder="傳訊息..." onkeypress="handleKeyPress(event)">
+      <button class="send-btn" onclick="handleSend()">傳送</button>
+    </div>
+  </div>
+
+  <script>
+    function goHome() {
+      if (confirm("要重新聊嗎？")) {
+        document.getElementById('chatBox').innerHTML = `
+          <div class="msg msg-ai">
+            安安！今天還好嗎？不管遇到什麼事，隨時跟我講喔～
+          </div>`;
+      }
+    }
+
+    function selectMood(mood) {
+      const moodText = {
+        '開心': '今天心情不錯欸！',
+        '難過': '今天有點難過...',
+        '生氣': '厚真的很生氣欸！',
+        '焦慮': '好煩喔，有點焦慮...'
+      };
+      sendMessage(moodText[mood]);
+    }
+
+    function handleKeyPress(e) {
+      if (e.key === 'Enter') handleSend();
+    }
+
+    function handleSend() {
+      const input = document.getElementById('userInput');
+      const text = input.value.trim();
+      if (!text) return;
+      
+      sendMessage(text);
+      input.value = '';
+    }
+
+    function sendMessage(text) {
+      appendMessage(text, 'user');
+
+      // 模擬真人思考打字的時間
+      setTimeout(() => {
+        const reply = generateRealHumanReply(text);
+        appendMessage(reply, 'ai');
+      }, 700);
+    }
+
+    function appendMessage(text, sender) {
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `msg msg-${sender}`;
+      msgDiv.innerHTML = text;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    // 像朋友一樣給予關懷 + 隨性實用的解決點子
+    function generateRealHumanReply(userText) {
+      const t = userText.toLowerCase();
+
+      if (t.includes("累") || t.includes("辛苦") || t.includes("沒力")) {
+        return "拍拍，今天真的辛苦了啦！體力被抽光的時候，要不要試試這幾個小招數算惹：<br><br>" +
+               "1. 關掉手機通知，給自己 20 分鐘完全躺平死機。<br>" +
+               "2. 去洗個超熱的水澡，把今天的煩心事都沖掉。<br>" +
+               "3. 今晚點個平時捨不得吃的宵夜犒賞自己！<br><br>" +
+               "你覺得哪一個聽起來比較舒服？";
+      } 
+      else if (t.includes("難過") || t.includes("低落") || t.includes("想哭") || t.includes("委屈")) {
+        return "怎麼了啦... 聽到你這樣說我也好心疼。心情低落的時候不用強迫自己好起來，試試看：<br><br>" +
+               "1. 想哭就大聲哭出來，哭完其實心裡會輕很多。<br>" +
+               "2. 找個抱枕緊緊抱著，或者去刷幾段可愛貓狗短影音轉移注意力。<br>" +
+               "3. 把心裡不爽的事情全部打在備忘錄裡，打完就刪掉！<br><br>" +
+               "你想先試哪一個，還是想再跟我多吐吐苦水？";
+      } 
+      else if (t.includes("生氣") || t.includes("火大") || t.includes("討厭") || t.includes("厚")) {
+        return "傻眼欸！到底誰讓你這麼火大啦？😡 氣炸的時候不要悶著，你可以：<br><br>" +
+               "1. 跟我大吼大叫，把發生的事全部講出來，我陪你罵！<br>" +
+               "2. 拿個枕頭用力狂揍幾下，或是去洗一把冰水臉換個心情。<br>" +
+               "3. 出去戴耳機把音樂開最大聲，跑一跑把氣發洩掉。<br><br>" +
+               "要不要跟我講講看剛剛到底發生什麼爛事？";
+      } 
+      else if (t.includes("焦慮") || t.includes("緊張") || t.includes("煩") || t.includes("擔心")) {
+        return "別急別急，先深呼吸一下～腦袋很亂的時候可以這樣做：<br><br>" +
+               "1. 拿張紙把現在擔心的事一項項寫下來，看哪些是現在能解決的、哪些不行。<br>" +
+               "2. 試試「478呼吸法」：吸氣4秒、憋氣7秒、慢慢吐氣8秒，做三次心跳就會慢下來。<br>" +
+               "3. 站起來去倒杯熱水，順便看看窗外 1 分鐘，讓大腦重設。<br><br>" +
+               "要不要跟我說說你在煩哪件事？我們一起拆解！";
+      } 
+      else if (t.includes("開心") || t.includes("爽") || t.includes("讚")) {
+        return "太讚了吧！看到你這麼爽我也超開心！好心情就要好好延續：<br><br>" +
+               "1. 快跟重要的人分享這份喜悅！<br>" +
+               "2. 把今天這個爽快的時刻寫在備忘錄裡，以後心情不好可以拿出來看。<br>" +
+               "3. 買杯喜歡的飲料給自己一個小獎勵！<br><br>" +
+               "快跟我講講到底發生了什麼好消息？我也想聽！";
+      } 
+      else {
+        return "原來是這樣喔... 感覺這件事真的滿卡心的。如果想換個心情，要不要試試看：<br><br>" +
+               "1. 去吃個甜食或喝杯喜歡的飲料。<br>" +
+               "2. 聽幾首平常最喜歡的歌放空一下。<br>" +
+               "3. 繼續跟我講，把心裡想說的全部講完～<br><br>" +
+               "你現在感覺還好嗎？";
+      }
+    }
+  </script>
+</body>
+</html>
